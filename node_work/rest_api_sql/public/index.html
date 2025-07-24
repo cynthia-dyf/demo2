@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>user Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px;
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>user Management</h1>
+
+    <!-- Form to add new user -->
+    <h2>Add New user</h2>
+    <form id="adduserForm">
+        <input type="text" id="name" placeholder="Enter name" required>
+     
+        <button type="submit">Add user</button>
+    </form>
+
+    <h2>users List</h2>
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- user data will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fetch all users when the page loads
+        window.onload = function() {
+            fetchusers();
+        };
+
+        // Fetch users from the server
+        function fetchusers() {
+            fetch('/users')
+                .then(response => response.json())
+                .then(users => {
+                    const tableBody = document.querySelector('#usersTable tbody');
+                    tableBody.innerHTML = ''; // Clear the table before adding new data
+                    users.forEach(user => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${user.id}</td>
+                            <td>${user.name}</td>
+                            <td>
+                                <button onclick="updateuser(${user.id})">Update</button>
+                                <button onclick="deleteuser(${user.id})">Delete</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching users:', error));
+        }
+
+        // Handle form submission to add a new user
+        document.getElementById('adduserForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+
+            fetch('/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`user ${data.name} added with ID ${data.id}`);
+                fetchusers(); // Refresh the user list
+            })
+            .catch(error => console.error('Error adding user:', error));
+
+            document.getElementById('name').value = ''; // Clear input field
+        });
+
+        // Handle updating a user
+        function updateuser(id) {
+            const newName = prompt('Enter the new name:');
+            if (newName && newName.trim() !== '') {
+                fetch(`/user/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: newName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(`user ID ${id} updated to ${data.name}`);
+                    fetchusers(); // Refresh the user list
+                })
+                .catch(error => console.error('Error updating user:', error));
+            }
+        }
+
+        // Handle deleting a user
+        function deleteuser(id) {
+            if (confirm('Are you sure you want to delete this user?')) {
+                fetch(`/user/${id}`, {
+                    method: 'DELETE',
+                })
+                .then(response => {
+                    if (response.status === 204) {
+                        alert('user deleted successfully');
+                        fetchusers(); // Refresh the user list
+                    } else {
+                        response.json().then(data => alert(data.error));
+                    }
+                })
+                .catch(error => console.error('Error deleting user:', error));
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        table {
+            margin: 0 auto;
+        }
+        td {
+            padding: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameField = document.getElementById('name');
+            const ageField = document.getElementById('age');
+            const zipField = document.getElementById('zip');
+
+            nameField.addEventListener('blur', () => {
+                const nameError = document.getElementById('nameError');
+                if (nameField.value.trim() === "") {
+                    nameError.textContent = "Name is required.";
+                } else {
+                    nameError.textContent = "";
+                }
+            });
+
+            ageField.addEventListener('blur', () => {
+                const ageError = document.getElementById('ageError');
+                const age = parseInt(ageField.value, 10);
+                if (isNaN(age) || age < 10 || age > 100) {
+                    ageError.textContent = "Age must be between 10 and 100.";
+                } else {
+                    ageError.textContent = "";
+                }
+            });
+
+            zipField.addEventListener('blur', () => {
+                const zipError = document.getElementById('zipError');
+                if (!/^\d{6}$/.test(zipField.value.trim())) {
+                    zipError.textContent = "Zip code must be 6 digits.";
+                } else {
+                    zipError.textContent = "";
+                }
+            });
+        });
+
+        function validateForm(event) {
+            event.preventDefault(); // Prevent form submission
+            let isValid = true;
+
+            // Clear previous error messages
+            document.querySelectorAll('.error').forEach(error => error.textContent = '');
+
+            // Validate Name
+            const name = document.getElementById('name').value.trim();
+            if (name === "") {
+                document.getElementById('nameError').textContent = "Name is required.";
+                isValid = false;
+            }
+
+            // Validate Age
+            const age = parseInt(document.getElementById('age').value, 10);
+            if (isNaN(age) || age < 10 || age > 100) {
+                document.getElementById('ageError').textContent = "Age must be between 10 and 100.";
+                isValid = false;
+            }
+
+            // Validate Zip Code
+            const zipCode = document.getElementById('zip').value.trim();
+            if (!/^\d{6}$/.test(zipCode)) {
+                document.getElementById('zipError').textContent = "Zip code must be 6 digits.";
+                isValid = false;
+            }
+
+            if (isValid) {
+                displayOutput();
+            }
+        }
+
+        function displayOutput() {
+            const name = document.getElementById('name').value.trim();
+            const age = document.getElementById('age').value.trim();
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const address = document.getElementById('address').value.trim();
+            const city = document.getElementById('city').value;
+            const zip = document.getElementById('zip').value.trim();
+            const hobbies = Array.from(document.querySelectorAll('input[name="hobbies"]:checked'))
+                .map(hobby => hobby.value)
+                .join(', ');
+
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = `
+                <h2>Submitted Information</h2>
+                <p><strong>Name:</strong> ${name}</p>
+                <p><strong>Age:</strong> ${age}</p>
+                <p><strong>Gender:</strong> ${gender}</p>
+                <p><strong>Address:</strong> ${address}</p>
+                <p><strong>City:</strong> ${city}</p>
+                <p><strong>Zip Code:</strong> ${zip}</p>
+                <p><strong>Hobbies:</strong> ${hobbies || 'None'}</p>
+            `;
+        }
+    </script>
+</head>
+<body>
+    <h1>User Information Form</h1>
+    <form onsubmit="validateForm(event)">
+        <table>
+            <tr>
+                <td><label for="name">Name:</label></td>
+                <td>
+                    <input type="text" id="name" name="name" required>
+                    <span id="nameError" class="error"></span>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="age">Age:</label></td>
+                <td>
+                    <input type="number" id="age" name="age" required>
+                    <span id="ageError" class="error"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>Gender:</td>
+                <td>
+                    <input type="radio" id="male" name="gender" value="Male" required>
+                    <label for="male">Male</label>
+                    <input type="radio" id="female" name="gender" value="Female" required>
+                    <label for="female">Female</label>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="address">Address:</label></td>
+                <td><input type="text" id="address" name="address" required></td>
+            </tr>
+            <tr>
+                <td><label for="city">City:</label></td>
+                <td>
+                    <select id="city" name="city" required>
+                        <option value="">Select a city</option>
+                        <option value="beijing">beijing</option>
+                        <option value="shanghai">shanghai</option>
+                        <option value="xian">xian</option>
+                        <option value="shenzhen">shenzhen</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="zip">Zip Code:</label></td>
+                <td>
+                    <input type="text" id="zip" name="zip" required>
+                    <span id="zipError" class="error"></span>
+                </td>
+            </tr>
+            <tr>
+                <td>Hobbies:</td>
+                <td>
+                    <input type="checkbox" id="reading" name="hobbies" value="Reading">
+                    <label for="reading">Reading</label>
+                    <input type="checkbox" id="traveling" name="hobbies" value="Traveling">
+                    <label for="traveling">Traveling</label>
+                    <input type="checkbox" id="sports" name="hobbies" value="Sports">
+                    <label for="sports">Sports</label>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: center;">
+                    <button type="submit">Submit</button>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <div id="output" class="output"></div>
+</body>
+</html>

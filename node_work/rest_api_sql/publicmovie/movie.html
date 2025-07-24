@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>movie Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        input, button {
+            padding: 8px;
+            margin: 5px;
+        }
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>movie Management</h1>
+
+    <!-- Form to add new movie -->
+    <h2>Add New movie</h2>
+    <form id="addmovieForm">
+        <input type="text" id="name" placeholder="Enter name" required>
+     
+        <button type="submit">Add movie</button>
+    </form>
+
+    <h2>search movie</h2>
+    <input type="text" id="searchInput" placeholder="Search by name" >
+    <button onclick="searchmovie()">Search</button>
+
+    <script>
+        // Function to search movies by name
+        function searchmovie() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#moviesTable tbody tr');
+            rows.forEach(row => {
+                const nameCell = row.cells[1].textContent.toLowerCase();
+                if (nameCell.includes(input)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        </script>
+    <h2>movies List</h2>
+    <table id="moviesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- movie data will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fetch all movies when the page loads
+        window.onload = function() {
+            fetchmovies();
+        };
+
+        // Fetch movies from the server
+        function fetchmovies() {
+            fetch('/movies')
+                .then(response => response.json())
+                .then(movies => {
+                    const tableBody = document.querySelector('#moviesTable tbody');
+                    tableBody.innerHTML = ''; // Clear the table before adding new data
+                    movies.forEach(movie => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${movie.id}</td>
+                            <td>${movie.name}</td>
+                            <td>
+                                <button onclick="updatemovie(${movie.id})">Update</button>
+                                <button onclick="deletemovie(${movie.id})">Delete</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching movies:', error));
+        }
+
+        // Handle form submission to add a new movie
+        document.getElementById('addmovieForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+
+            fetch('/movies', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`movie ${data.name} added with ID ${data.id}`);
+                fetchmovies(); // Refresh the movie list
+            })
+            .catch(error => console.error('Error adding movie:', error));
+
+            document.getElementById('name').value = ''; // Clear input field
+        });
+
+        // Handle updating a movie
+        function updatemovie(id) {
+            const newName = prompt('Enter the new name:');
+            if (newName && newName.trim() !== '') {
+                fetch(`/movie/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: newName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(`movie ID ${id} updated to ${data.name}`);
+                    fetchmovies(); // Refresh the movie list
+                })
+                .catch(error => console.error('Error updating movie:', error));
+            }
+        }
+
+        // Handle deleting a movie
+        function deletemovie(id) {
+            if (confirm('Are you sure you want to delete this movie?')) {
+                fetch(`/movie/${id}`, {
+                    method: 'DELETE',
+                })
+                .then(response => {
+                    if (response.status === 204) {
+                        alert('movie deleted successfully');
+                        fetchmovies(); // Refresh the movie list
+                    } else {
+                        response.json().then(data => alert(data.error));
+                    }
+                })
+                .catch(error => console.error('Error deleting movie:', error));
+            }
+        }
+
+
+    </script>
+</body>
+</html>
