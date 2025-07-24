@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Joke App</title>
+</head>
+
+<body>
+    <h1>Let us enjoy some jokes!</h1>
+
+    <button id='jokebutton' onclick="getJock()">get a joke</button>
+    <p id="jokedisplay"></p>
+
+    <script>
+        async function  getJock() {
+           const response  = await fetch('/joke');
+           const data =  await response.json();
+           let joketext = "";
+              if (data.type === 'single') {
+                joketext = data.joke;
+              } else if(data.type === 'twopart') {
+                joketext = data.setup + " ... " + data.delivery;
+              } else {
+                joketext = "No joke found!";
+              }
+              document.getElementById('jokedisplay').innerText = joketext;
+        };
+    </script>
+</body>
+</html>
+

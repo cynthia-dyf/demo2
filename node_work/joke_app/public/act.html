@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACT App</title>
+</head>
+
+<body>
+    <h1>Activitys!</h1>
+
+    <button id='actbutton' onclick="getAct()">get some activities</button>
+    <p id="actdisplay"></p>
+
+    <script>
+        async function  getAct() {
+           const response  = await fetch('/act');
+           const data =  await response.json();
+           let acttext = "";
+           acttext = data.activity;
+              /*if (data.type === 'single') {
+                acttext = data.activity;
+              } else if(data.type === 'twopart') {
+                acttext = data.setup + " ... " + data.delivery;
+              } else {
+                acttext = "No activity found!";
+              }
+                */
+              document.getElementById('actdisplay').innerText = acttext;
+        };
+    </script>
+</body>
+</html>
+
